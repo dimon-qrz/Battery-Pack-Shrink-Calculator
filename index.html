@@ -1,9 +1,9 @@
-
+<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор термоусадки для Li-ion акумуляторів</title>
+    <title>Універсальний Калькулятор Термоусадки (Li-ion / LiFePO4)</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -14,11 +14,10 @@
             --text-muted: #94a3b8;
             --border: #334155;
             --success: #22c55e;
+            --lifepo4-color: #f59e0b;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -31,7 +30,7 @@
         }
 
         .container {
-            max-width: 650px;
+            max-width: 680px;
             width: 100%;
             background: var(--card-bg);
             padding: 25px;
@@ -65,13 +64,11 @@
             padding-bottom: 5px;
         }
 
-        .control-group {
-            margin-bottom: 20px;
-        }
+        .control-group { margin-bottom: 20px; }
 
         .btn-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 10px;
         }
 
@@ -86,14 +83,18 @@
             transition: all 0.2s ease;
         }
 
-        .btn:hover {
-            border-color: var(--accent);
-        }
+        .btn:hover { border-color: var(--accent); }
 
         .btn.active {
             background: var(--accent);
             color: #000;
             border-color: var(--accent);
+        }
+
+        .btn.active-lifepo4 {
+            background: var(--lifepo4-color);
+            color: #000;
+            border-color: var(--lifepo4-color);
         }
 
         .slider-container {
@@ -120,57 +121,6 @@
             text-align: center;
         }
 
-        /* Візуалізація збірки */
-        .preview-box {
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 120px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-        }
-
-        .battery-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px dashed var(--border);
-        }
-
-        .battery-row {
-            display: flex;
-            gap: 6px;
-        }
-
-        .cell {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #475569, #0f172a);
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
-            position: relative;
-        }
-
-        .cell::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-        }
-
         /* Картки результатів */
         .results-grid {
             display: grid;
@@ -179,9 +129,7 @@
         }
 
         @media (max-width: 480px) {
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
+            .results-grid { grid-template-columns: 1fr; }
         }
 
         .result-card {
@@ -209,9 +157,7 @@
             color: var(--accent);
         }
 
-        .result-card.highlight .result-value {
-            color: var(--success);
-        }
+        .result-card.highlight .result-value { color: var(--success); }
 
         .result-note {
             font-size: 0.75rem;
@@ -233,22 +179,30 @@
 <body>
 
 <div class="container">
-    <h1>🔋 Калькулятор термоусадки</h1>
-    <p class="subtitle">Розрахунок ПВХ-плівки для акумуляторних збірок Li-ion</p>
+    <h1>🔋 Калькулятор Термоусадки</h1>
+    <p class="subtitle">Розрахунок ПВХ-плівки для Li-ion та LiFePO4 акумуляторів</p>
 
-    <!-- Тип акумулятора -->
+    <!-- Хімія -->
     <div class="control-group">
-        <div class="section-title">1. Тип елемента</div>
+        <div class="section-title">1. Тип хімії</div>
         <div class="btn-group">
-            <button class="btn active" onclick="setCellType('18650', this)">18650</button>
-            <button class="btn" onclick="setCellType('21700', this)">21700</button>
+            <button class="btn active" id="btn-chem-liion" onclick="setChem('liion')">Li-ion (3.7V)</button>
+            <button class="btn" id="btn-chem-lifepo4" onclick="setChem('lifepo4')">LiFePO4 (3.2V)</button>
+        </div>
+    </div>
+
+    <!-- Модель елемента -->
+    <div class="control-group">
+        <div class="section-title">2. Модель елемента</div>
+        <div class="btn-group" id="cell-selector">
+            <!-- Динамічно заповнюється скриптом -->
         </div>
     </div>
 
     <!-- Конфігурація P -->
     <div class="control-group">
-        <div class="section-title">2. Паралельне з'єднання (P)</div>
-        <div class="btn-group">
+        <div class="section-title">3. Паралельне з'єднання (P)</div>
+        <div class="btn-group" id="p-selector">
             <button class="btn active" onclick="setP(1, this)">1P (1 ряд)</button>
             <button class="btn" onclick="setP(2, this)">2P (2 ряди)</button>
             <button class="btn" onclick="setP(3, this)">3P (3 ряди)</button>
@@ -257,73 +211,98 @@
 
     <!-- Конфігурація S -->
     <div class="control-group">
-        <div class="section-title">3. Послідовне з'єднання (S): <span id="s-val-display" class="value-badge">6S</span></div>
+        <div class="section-title">4. Послідовне з'єднання (S): <span id="s-val-display" class="value-badge">4S</span></div>
         <div class="slider-container">
-            <input type="range" id="s-slider" min="1" max="16" value="6" oninput="updateS(this.value)">
+            <input type="range" id="s-slider" min="1" max="16" value="4" oninput="updateS(this.value)">
         </div>
-    </div>
-
-    <!-- Візуалізація перерізу -->
-    <div class="section-title">Візуальна схема перерізу збірки</div>
-    <div class="preview-box">
-        <div id="battery-preview" class="battery-grid"></div>
     </div>
 
     <!-- Результати -->
     <div class="section-title">Результати розрахунку (Ширина плівки)</div>
     <div class="results-grid">
         <div class="result-card">
-            <div class="result-title">БЕЗ холдерів</div>
+            <div class="result-title">Без холдерів / Базовий розмір</div>
             <div id="res-no-holders" class="result-value">0 мм</div>
-            <div id="dim-no-holders" class="result-note">Розмір: 0 × 0 мм</div>
+            <div id="dim-no-holders" class="result-note">Габарити: 0 × 0 мм</div>
         </div>
         <div class="result-card highlight">
-            <div class="result-title">З холдерами (Рекомендовано)</div>
+            <div class="result-title" id="holders-card-title">З холдерами / Ізоляторами</div>
             <div id="res-holders" class="result-value">0 мм</div>
-            <div id="dim-holders" class="result-note">Розмір: 0 × 0 мм</div>
+            <div id="dim-holders" class="result-note">Габарити: 0 × 0 мм</div>
         </div>
     </div>
 
     <div class="results-grid" style="margin-top: 15px;">
         <div class="result-card" style="grid-column: 1 / -1;">
-            <div class="result-title">✂️ Рекомендована довжина нарізки плівки (з урахуванням торців)</div>
+            <div class="result-title">✂️ Рекомендована довжина нарізки плівки (з торцями)</div>
             <div id="res-length" class="result-value" style="color: var(--text-main);">0 мм</div>
-            <div class="result-note">Довжина акумулятора + випуск з кожного боку для надійної фіксації</div>
+            <div class="result-note">Довжина блоку + випуск для загіну на торці</div>
         </div>
     </div>
 
-    <div class="footer-info">
+    <div class="footer-info" id="tip-info">
         💡 <strong>Порада:</strong> ПВХ-термоусадка маркується за <u>шириною у складеному (пласкому) стані</u>. Обирайте найближчий більший стандартний розмір плівки з наявних у продажу.
-    </div>  </div>
-  <div class="footer-info">
-         <strong> За ініціативи <u>Dima Lasun </u></title> </strong>  facebook.com/groups/3145673675685047 
     </div>
 </div>
-  </div>
+
 <script>
     let state = {
-        cellType: '18650',
+        chem: 'lifepo4',
+        cellModel: '105Ah',
         p: 1,
-        s: 6
+        s: 4
     };
 
-    const specs = {
-        '18650': {
-            dBare: 18.5,
-            dHolder: 20.2,
-            length: 68
+    // База даних габаритів акумуляторів (Ширина x Товщина x Висота в мм)
+    const database = {
+        'liion': {
+            '18650': { type: 'cyl', d: 18.5, dHolder: 20.2, h: 68 },
+            '21700': { type: 'cyl', d: 21.5, dHolder: 23.0, h: 73 }
         },
-        '21700': {
-            dBare: 21.5,
-            dHolder: 23.0,
-            length: 73
+        'lifepo4': {
+            '32700': { type: 'cyl', d: 32.5, dHolder: 34.5, h: 72 },
+            '50Ah':  { type: 'prism', w: 148, t: 27, h: 135 },
+            '105Ah': { type: 'prism', w: 130, t: 36, h: 200 },
+            '280Ah': { type: 'prism', w: 174, t: 72, h: 207 },
+            '304Ah': { type: 'prism', w: 174, t: 72, h: 207 }
         }
     };
 
-    function setCellType(type, btn) {
-        state.cellType = type;
-        updateActiveButton(btn);
+    function setChem(chemType) {
+        state.chem = chemType;
+        const btnLiion = document.getElementById('btn-chem-liion');
+        const btnLifepo4 = document.getElementById('btn-chem-lifepo4');
+
+        if (chemType === 'liion') {
+            btnLiion.className = 'btn active';
+            btnLifepo4.className = 'btn';
+            state.cellModel = '18650';
+        } else {
+            btnLiion.className = 'btn';
+            btnLifepo4.className = 'btn active-lifepo4';
+            state.cellModel = '105Ah';
+        }
+
+        renderCellSelector();
         calculate();
+    }
+
+    function renderCellSelector() {
+        const container = document.getElementById('cell-selector');
+        container.innerHTML = '';
+
+        const models = Object.keys(database[state.chem]);
+        models.forEach((m, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `btn ${m === state.cellModel ? (state.chem === 'lifepo4' ? 'active-lifepo4' : 'active') : ''}`;
+            btn.innerText = m;
+            btn.onclick = () => {
+                state.cellModel = m;
+                updateActiveButton(btn);
+                calculate();
+            };
+            container.appendChild(btn);
+        });
     }
 
     function setP(pVal, btn) {
@@ -341,59 +320,64 @@
     function updateActiveButton(clickedBtn) {
         const parent = clickedBtn.parentElement;
         const buttons = parent.querySelectorAll('.btn');
-        buttons.forEach(b => b.classList.remove('active'));
-        clickedBtn.classList.add('active');
-    }
-
-    function renderPreview() {
-        const grid = document.getElementById('battery-preview');
-        grid.innerHTML = '';
-
-        for (let r = 0; r < state.p; r++) {
-            const row = document.createElement('div');
-            row.className = 'battery-row';
-            
-            const displayS = Math.min(state.s, 13); 
-            for (let c = 0; c < displayS; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                row.appendChild(cell);
-            }
-            grid.appendChild(row);
-        }
+        buttons.forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('active-lifepo4');
+        });
+        clickedBtn.classList.add(state.chem === 'lifepo4' ? 'active-lifepo4' : 'active');
     }
 
     function calculate() {
-        renderPreview();
+        const item = database[state.chem][state.cellModel];
 
-        const spec = specs[state.cellType];
+        let widthBare, heightBare, widthHolder, heightHolder, cutLength;
+        let filmBare, filmHolder;
 
-        // 1. Без холдерів
-        const widthBare = state.s * spec.dBare;
-        const heightBare = state.p * spec.dBare;
-        const halfPerimeterBare = widthBare + heightBare;
-        const filmBare = Math.round(halfPerimeterBare * 1.06);
+        if (item.type === 'cyl') {
+            // Циліндричні елементи
+            widthBare = state.s * item.d;
+            heightBare = state.p * item.d;
+            filmBare = Math.round((widthBare + heightBare) * 1.06);
 
-        // 2. З холдерами
-        const widthHolder = state.s * spec.dHolder;
-        const heightHolder = state.p * spec.dHolder;
-        const halfPerimeterHolder = widthHolder + heightHolder;
-        const filmHolder = Math.round(halfPerimeterHolder * 1.07);
+            widthHolder = state.s * item.dHolder;
+            heightHolder = state.p * item.dHolder;
+            filmHolder = Math.round((widthHolder + heightHolder) * 1.07);
 
-        // 3. Довжина нарізки
-        const marginPerSide = state.p === 1 ? 10 : (state.p === 2 ? 15 : 20);
-        const cutLength = spec.length + (marginPerSide * 2);
+            const marginPerSide = state.p === 1 ? 10 : (state.p === 2 ? 15 : 20);
+            cutLength = item.h + (marginPerSide * 2);
+
+            document.getElementById('holders-card-title').innerText = "З холдерами (Рекомендовано)";
+        } else {
+            // Призматичні елементи (LiFePO4)
+            // Компонування: S елементів ставляться бок до боку (ширина = S * товщина), P розширює углиб
+            const textboardMargin = 2; // +2мм на текстоліт між осередками
+            widthBare = (state.s * item.t) + (state.s * textboardMargin);
+            heightBare = state.p * item.w;
+            filmBare = Math.round((widthBare + heightBare) * 1.05);
+
+            // У варіанті з ізоляцією/фанерою/шпильками додаємо трохи більше запасу (+8 мм)
+            widthHolder = widthBare + 8;
+            heightHolder = heightBare + 4;
+            filmHolder = Math.round((widthHolder + heightHolder) * 1.05);
+
+            // Для призматиків торцевий загін робиться згори та знизу
+            const topMargin = Math.round(item.t * 0.4);
+            cutLength = item.h + (topMargin * 2);
+
+            document.getElementById('holders-card-title').innerText = "З текстолітом / Стяжками";
+        }
 
         document.getElementById('res-no-holders').innerText = filmBare + ' мм';
-        document.getElementById('dim-no-holders').innerText = `Габарити: ${widthBare.toFixed(1)} × ${heightBare.toFixed(1)} мм`;
+        document.getElementById('dim-no-holders').innerText = `Габарити: ${widthBare.toFixed(0)} × ${heightBare.toFixed(0)} мм`;
 
         document.getElementById('res-holders').innerText = filmHolder + ' мм';
-        document.getElementById('dim-holders').innerText = `Габарити: ${widthHolder.toFixed(1)} × ${heightHolder.toFixed(1)} мм`;
+        document.getElementById('dim-holders').innerText = `Габарити: ${widthHolder.toFixed(0)} × ${heightHolder.toFixed(0)} мм`;
 
         document.getElementById('res-length').innerText = cutLength + ' мм';
     }
 
-    calculate();
+    // Первинна ініціалізація
+    setChem('lifepo4');
 </script>
 
 </body>
