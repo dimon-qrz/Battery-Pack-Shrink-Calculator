@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор термоусадки для Li-ion акумуляторів</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 650px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 5px;
+            color: var(--accent);
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .btn {
+            background: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent);
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .value-badge {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 6px;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        /* Візуалізація збірки */
+        .preview-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        .battery-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+        }
+
+        .battery-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .cell {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #475569, #0f172a);
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+            position: relative;
+        }
+
+        .cell::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* Картки результатів */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .result-card.highlight {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .result-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .result-card.highlight .result-value {
+            color: var(--success);
+        }
+
+        .result-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .footer-info {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(56, 189, 248, 0.05);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔋 Калькулятор термоусадки</h1>
+    <p class="subtitle">Розрахунок ПВХ-плівки для акумуляторних збірок Li-ion</p>
+
+    <!-- Тип акумулятора -->
+    <div class="control-group">
+        <div class="section-title">1. Тип елемента</div>
+        <div class="btn-group">
+            <button class="btn active" onclick="setCellType('18650', this)">18650</button>
+            <button class="btn" onclick="setCellType('21700', this)">21700</button>
+        </div>
+    </div>
+
+    <!-- Конфігурація P -->
+    <div class="control-group">
+        <div class="section-title">2. Паралельне з'єднання (P)</div>
+        <div class="btn-group">
+            <button class="btn active" onclick="setP(1, this)">1P (1 ряд)</button>
+            <button class="btn" onclick="setP(2, this)">2P (2 ряди)</button>
+            <button class="btn" onclick="setP(3, this)">3P (3 ряди)</button>
+        </div>
+    </div>
+
+    <!-- Конфігурація S -->
+    <div class="control-group">
+        <div class="section-title">3. Послідовне з'єднання (S): <span id="s-val-display" class="value-badge">6S</span></div>
+        <div class="slider-container">
+            <input type="range" id="s-slider" min="1" max="16" value="6" oninput="updateS(this.value)">
+        </div>
+    </div>
+
+    <!-- Візуалізація перерізу -->
+    <div class="section-title">Візуальна схема перерізу збірки</div>
+    <div class="preview-box">
+        <div id="battery-preview" class="battery-grid"></div>
+    </div>
+
+    <!-- Результати -->
+    <div class="section-title">Результати розрахунку (Ширина плівки)</div>
+    <div class="results-grid">
+        <div class="result-card">
+            <div class="result-title">БЕЗ холдерів</div>
+            <div id="res-no-holders" class="result-value">0 мм</div>
+            <div id="dim-no-holders" class="result-note">Розмір: 0 × 0 мм</div>
+        </div>
+        <div class="result-card highlight">
+            <div class="result-title">З холдерами (Рекомендовано)</div>
+            <div id="res-holders" class="result-value">0 мм</div>
+            <div id="dim-holders" class="result-note">Розмір: 0 × 0 мм</div>
+        </div>
+    </div>
+
+    <div class="results-grid" style="margin-top: 15px;">
+        <div class="result-card" style="grid-column: 1 / -1;">
+            <div class="result-title">✂️ Рекомендована довжина нарізки плівки (з урахуванням торців)</div>
+            <div id="res-length" class="result-value" style="color: var(--text-main);">0 мм</div>
+            <div class="result-note">Довжина акумулятора + випуск з кожного боку для надійної фіксації</div>
+        </div>
+    </div>
+
+    <div class="footer-info">
+        💡 <strong>Порада:</strong> ПВХ-термоусадка маркується за <u>шириною у складеному (пласкому) стані</u>. Обирайте найближчий більший стандартний розмір плівки з наявних у продажу.
+    </div>
+</div>
+
+<script>
+    let state = {
+        cellType: '18650',
+        p: 1,
+        s: 6
+    };
+
+    const specs = {
+        '18650': {
+            dBare: 18.5,
+            dHolder: 20.2,
+            length: 68
+        },
+        '21700': {
+            dBare: 21.5,
+            dHolder: 23.0,
+            length: 73
+        }
+    };
+
+    function setCellType(type, btn) {
+        state.cellType = type;
+        updateActiveButton(btn);
+        calculate();
+    }
+
+    function setP(pVal, btn) {
+        state.p = pVal;
+        updateActiveButton(btn);
+        calculate();
+    }
+
+    function updateS(sVal) {
+        state.s = parseInt(sVal);
+        document.getElementById('s-val-display').innerText = state.s + 'S';
+        calculate();
+    }
+
+    function updateActiveButton(clickedBtn) {
+        const parent = clickedBtn.parentElement;
+        const buttons = parent.querySelectorAll('.btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        clickedBtn.classList.add('active');
+    }
+
+    function renderPreview() {
+        const grid = document.getElementById('battery-preview');
+        grid.innerHTML = '';
+
+        for (let r = 0; r < state.p; r++) {
+            const row = document.createElement('div');
+            row.className = 'battery-row';
+            
+            const displayS = Math.min(state.s, 13); 
+            for (let c = 0; c < displayS; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                row.appendChild(cell);
+            }
+            grid.appendChild(row);
+        }
+    }
+
+    function calculate() {
+        renderPreview();
+
+        const spec = specs[state.cellType];
+
+        // 1. Без холдерів
+        const widthBare = state.s * spec.dBare;
+        const heightBare = state.p * spec.dBare;
+        const halfPerimeterBare = widthBare + heightBare;
+        const filmBare = Math.round(halfPerimeterBare * 1.06);
+
+        // 2. З холдерами
+        const widthHolder = state.s * spec.dHolder;
+        const heightHolder = state.p * spec.dHolder;
+        const halfPerimeterHolder = widthHolder + heightHolder;
+        const filmHolder = Math.round(halfPerimeterHolder * 1.07);
+
+        // 3. Довжина нарізки
+        const marginPerSide = state.p === 1 ? 10 : (state.p === 2 ? 15 : 20);
+        const cutLength = spec.length + (marginPerSide * 2);
+
+        document.getElementById('res-no-holders').innerText = filmBare + ' мм';
+        document.getElementById('dim-no-holders').innerText = `Габарити: ${widthBare.toFixed(1)} × ${heightBare.toFixed(1)} мм`;
+
+        document.getElementById('res-holders').innerText = filmHolder + ' мм';
+        document.getElementById('dim-holders').innerText = `Габарити: ${widthHolder.toFixed(1)} × ${heightHolder.toFixed(1)} мм`;
+
+        document.getElementById('res-length').innerText = cutLength + ' мм';
+    }
+
+    calculate();
+</script>
+
+</body>
+</html>
