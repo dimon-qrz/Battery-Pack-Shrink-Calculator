@@ -15,6 +15,7 @@
             --border: #334155;
             --success: #22c55e;
             --lifepo4-color: #f59e0b;
+            --author-yellow: #facc15;
         }
 
         * { box-sizing: border-box; }
@@ -264,6 +265,27 @@
             color: var(--text-muted);
             line-height: 1.4;
         }
+
+        /* Авторський блок */
+        .author-footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border);
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--author-yellow);
+        }
+
+        .author-footer a {
+            color: var(--author-yellow);
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        .author-footer a:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -342,6 +364,13 @@
 
     <div class="footer-info">
         💡 <strong>Порада:</strong> ПВХ-термоусадка маркується за <u>шириною у складеному (пласкому) стані</u>. Обирайте найближчий більший стандартний розмір плівки з наявних у продажу.
+    </div>
+
+    <!-- Авторський блок -->
+    <div class="author-footer">
+        🛠️ Створено за ініціативи Dima Lasun.<br>
+        Моя група в FB «Ремонт електрообладнання»: 
+        <a href="https://facebook.com/groups/3145673675685047" target="_blank" rel="noopener noreferrer">facebook.com/groups/3145673675685047</a>
     </div>
 </div>
 
@@ -433,7 +462,7 @@
         const grid = document.getElementById('battery-preview');
         grid.innerHTML = '';
 
-        const displayS = Math.min(state.s, 12); // Обмеження для зручного UI
+        const displayS = Math.min(state.s, 12);
 
         for (let r = 0; r < state.p; r++) {
             const row = document.createElement('div');
@@ -449,7 +478,6 @@
                     cell.className = 'cell-prism';
                     row.appendChild(cell);
 
-                    // Додаємо візуальну проставку
                     if (useSpacers && c < displayS - 1) {
                         const spacer = document.createElement('div');
                         spacer.className = 'spacer-line';
@@ -465,7 +493,6 @@
         const item = database[state.chem][state.cellModel];
         const spacerOption = document.getElementById('spacer-option');
         
-        // Показуємо чекбокс проставок тільки для призматичних комірок
         let useSpacers = false;
         if (item.type === 'prism') {
             spacerOption.style.display = 'flex';
@@ -493,7 +520,6 @@
 
             document.getElementById('holders-card-title').innerText = "З холдерами (Рекомендовано)";
         } else {
-            // Товщина проставки = 2мм на кожен стик
             const spacerThickness = useSpacers ? 2.0 : 0.0;
             const totalSpacersWidth = (state.s - 1) * spacerThickness;
 
@@ -501,7 +527,6 @@
             heightBare = state.p * item.w;
             filmBare = Math.round((widthBare + heightBare) * 1.05);
 
-            // Режим з урахуванням зовнішніх затискних пластин/фанери (+6 мм)
             widthHolder = widthBare + 6;
             heightHolder = heightBare + 4;
             filmHolder = Math.round((widthHolder + heightHolder) * 1.05);
@@ -521,7 +546,6 @@
         document.getElementById('res-length').innerText = cutLength + ' мм';
     }
 
-    // Початковий запуск
     setChem('lifepo4');
 </script>
 
