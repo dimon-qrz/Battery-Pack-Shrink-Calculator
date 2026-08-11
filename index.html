@@ -3,551 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Універсальний Калькулятор Термоусадки (Li-ion / LiFePO4)</title>
+    <title>Battery Master Calculator</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --success: #22c55e;
-            --lifepo4-color: #f59e0b;
-            --author-yellow: #facc15;
+            --primary: #58a6ff;
+            --bg: #0d1117;
+            --surface: #161b22;
+            --text: #e6edf3;
+            --border: #30363d;
         }
-
-        * { box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            max-width: 680px;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border);
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            text-align: center;
-            margin-bottom: 5px;
-            color: var(--accent);
-        }
-
-        p.subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-top: 0;
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 15px;
-            margin-bottom: 10px;
-            color: var(--text-main);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 5px;
-        }
-
-        .control-group { margin-bottom: 20px; }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-        }
-
-        .btn {
-            background: var(--bg-color);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover { border-color: var(--accent); }
-
-        .btn.active {
-            background: var(--accent);
-            color: #000;
-            border-color: var(--accent);
-        }
-
-        .btn.active-lifepo4 {
-            background: var(--lifepo4-color);
-            color: #000;
-            border-color: var(--lifepo4-color);
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .checkbox-container input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--lifepo4-color);
-            cursor: pointer;
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        input[type="range"] {
-            flex: 1;
-            accent-color: var(--accent);
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        .value-badge {
-            background: var(--accent);
-            color: #000;
-            font-weight: bold;
-            padding: 4px 12px;
-            border-radius: 6px;
-            min-width: 45px;
-            text-align: center;
-        }
-
-        /* Візуалізація перерізу */
-        .preview-box {
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 130px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-
-        .battery-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px dashed var(--border);
-        }
-
-        .battery-row {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        /* Циліндричні комірки */
-        .cell-cyl {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #475569, #0f172a);
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
-            position: relative;
-        }
-
-        .cell-cyl::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-        }
-
-        /* Призматичні комірки */
-        .cell-prism {
-            width: 18px;
-            height: 38px;
-            background: #22c55e;
-            border: 2px solid #15803d;
-            border-radius: 4px;
-            position: relative;
-        }
-
-        .spacer-line {
-            width: 4px;
-            height: 38px;
-            background: var(--lifepo4-color);
-            border-radius: 2px;
-        }
-
-        /* Картки результатів */
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        @media (max-width: 480px) {
-            .results-grid { grid-template-columns: 1fr; }
-        }
-
-        .result-card {
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 10px;
             padding: 15px;
-            text-align: center;
+            box-sizing: border-box;
         }
 
-        .result-card.highlight {
-            border-color: var(--success);
-            background: rgba(34, 197, 94, 0.05);
+        .card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
 
-        .result-title {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
+        h1 { 
+            font-size: 20px; 
+            margin-top: 0; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            color: var(--primary); 
         }
 
-        .result-value {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--accent);
+        .group { margin-bottom: 15px; }
+        
+        label { 
+            display: block; 
+            font-size: 12px; 
+            color: #8b949e; 
+            margin-bottom: 6px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
         }
 
-        .result-card.highlight .result-value { color: var(--success); }
-
-        .result-note {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 5px;
+        .radio-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 8px; 
         }
 
-        .footer-info {
-            margin-top: 20px;
-            padding: 12px;
-            background: rgba(56, 189, 248, 0.05);
-            border-radius: 8px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.4;
+        .radio-opt { 
+            background: #010409; 
+            padding: 10px 6px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            text-align: center; 
+            cursor: pointer; 
+            font-size: 13px;
+            user-select: none;
+            transition: all 0.2s;
         }
 
-        /* Авторський блок */
-        .author-footer {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px dashed var(--border);
-            text-align: center;
-            font-size: 0.9rem;
+        input[type="radio"] { display: none; }
+        
+        input[type="radio"]:checked + .radio-opt { 
+            border-color: var(--primary); 
+            background: #1f2937; 
+            color: var(--primary); 
             font-weight: 600;
-            color: var(--author-yellow);
         }
 
-        .author-footer a {
-            color: var(--author-yellow);
-            text-decoration: underline;
-            transition: opacity 0.2s;
+        .row-inputs { 
+            display: flex; 
+            gap: 10px; 
         }
 
-        .author-footer a:hover {
-            opacity: 0.8;
+        .row-inputs .group { 
+            flex: 1; 
+        }
+
+        input[type="number"] { 
+            width: 100%; 
+            padding: 10px 12px; 
+            background: #010409; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            color: white; 
+            box-sizing: border-box; 
+            font-size: 16px; /* 16px запобігає зуму на iOS */
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .result-panel { 
+            background: linear-gradient(145deg, #1c2128, #161b22);
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            margin-top: 20px;
+        }
+
+        .res-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 8px; 
+            font-size: 14px; 
+        }
+
+        .res-row:last-child { margin-bottom: 0; }
+        
+        .res-val { 
+            color: var(--primary); 
+            font-weight: bold; 
+        }
+
+        .viz-box { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #010409; 
+            border-radius: 8px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            overflow-x: auto; 
+            gap: 6px; 
+            min-height: 80px; 
+            justify-content: center;
+        }
+
+        .battery-row { 
+            display: flex; 
+            gap: 6px; 
+            align-items: center; 
+        }
+
+        .cell { 
+            width: 22px; 
+            height: 36px; 
+            background: #21262d; 
+            border: 2px solid var(--primary); 
+            border-radius: 4px; 
+            flex-shrink: 0;
+        }
+
+        footer { 
+            margin-top: 20px; 
+            font-size: 12px; 
+            text-align: center; 
+            color: #8b949e; 
+        }
+
+        footer a { 
+            color: var(--primary); 
+            text-decoration: none; 
+        }
+
+        footer a:hover { text-decoration: underline; }
+
+        /* Медіа-запит для дуже маленьких екранів (старі смартфони) */
+        @media (max-width: 380px) {
+            .card { padding: 12px; }
+            h1 { font-size: 18px; }
+            .radio-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🔋 Калькулятор Термоусадки</h1>
-    <p class="subtitle">Розрахунок ПВХ-плівки для Li-ion та LiFePO4 акумуляторів</p>
+<div class="card">
+    <h1>Battery Master Calculator</h1>
 
-    <!-- 1. Тип хімії -->
-    <div class="control-group">
-        <div class="section-title">1. Тип хімії</div>
-        <div class="btn-group">
-            <button class="btn active" id="btn-chem-liion" onclick="setChem('liion')">Li-ion (3.7V)</button>
-            <button class="btn" id="btn-chem-lifepo4" onclick="setChem('lifepo4')">LiFePO4 (3.2V)</button>
+    <div class="group">
+        <label>Тип акумулятора:</label>
+        <div class="radio-grid">
+            <label><input type="radio" name="chem" value="liion" checked onchange="calc()"> <div class="radio-opt">Li-ion</div></label>
+            <label><input type="radio" name="chem" value="lifepo4" onchange="calc()"> <div class="radio-opt">LiFePO4</div></label>
+            <label><input type="radio" name="chem" value="lead" onchange="calc()"> <div class="radio-opt">12V Lead</div></label>
         </div>
     </div>
 
-    <!-- 2. Модель елемента -->
-    <div class="control-group">
-        <div class="section-title">2. Модель елемента</div>
-        <div class="btn-group" id="cell-selector"></div>
-        
-        <!-- Чекбокс проставок для призматичних акумуляторів -->
-        <label class="checkbox-container" id="spacer-option" style="display: none;">
-            <input type="checkbox" id="use-spacers" checked onchange="calculate()">
-            <span>Враховувати проставки між комірками (+2 мм текстоліт/EVA)</span>
-        </label>
-    </div>
-
-    <!-- 3. Конфігурація P -->
-    <div class="control-group">
-        <div class="section-title">3. Паралельне з'єднання (P)</div>
-        <div class="btn-group" id="p-selector">
-            <button class="btn active" onclick="setP(1, this)">1P (1 ряд)</button>
-            <button class="btn" onclick="setP(2, this)">2P (2 ряди)</button>
-            <button class="btn" onclick="setP(3, this)">3P (3 ряди)</button>
+    <div class="row-inputs">
+        <div class="group">
+            <label>Послідовно (S):</label>
+            <input type="number" id="s" value="4" min="1" oninput="calc()">
+        </div>
+        <div class="group">
+            <label>Паралельно (P):</label>
+            <input type="number" id="p" value="1" min="1" oninput="calc()">
         </div>
     </div>
 
-    <!-- 4. Конфігурація S -->
-    <div class="control-group">
-        <div class="section-title">4. Послідовне з'єднання (S): <span id="s-val-display" class="value-badge">4S</span></div>
-        <div class="slider-container">
-            <input type="range" id="s-slider" min="1" max="16" value="4" oninput="updateS(this.value)">
-        </div>
+    <div class="group">
+        <label>Ємність 1 елемента (mAh):</label>
+        <input type="number" id="capacity" value="2500" min="1" step="100" oninput="calc()">
     </div>
 
-    <!-- Візуалізація перерізу -->
-    <div class="section-title">Візуальна схема перерізу збірки</div>
-    <div class="preview-box">
-        <div id="battery-preview" class="battery-grid"></div>
+    <div class="result-panel">
+        <div class="res-row"><span>Конфігурація:</span> <span id="config" class="res-val">4S 1P</span></div>
+        <div class="res-row"><span>Напруга збірки:</span> <span id="v" class="res-val">14.4 V</span></div>
+        <div class="res-row"><span>Загальна ємність:</span> <span id="totalCap" class="res-val">2.5 Ah</span></div>
+        <div class="res-row"><span>Енергія (Вт·год):</span> <span id="totalWh" class="res-val">36 Wh</span></div>
+        <div class="res-row"><span>Всього елементів:</span> <span id="total" class="res-val">4 шт.</span></div>
     </div>
 
-    <!-- Результати -->
-    <div class="section-title">Результати розрахунку (Ширина плівки)</div>
-    <div class="results-grid">
-        <div class="result-card">
-            <div class="result-title">Без холдерів / Без обв'язки</div>
-            <div id="res-no-holders" class="result-value">0 мм</div>
-            <div id="dim-no-holders" class="result-note">Габарити: 0 × 0 мм</div>
-        </div>
-        <div class="result-card highlight">
-            <div class="result-title" id="holders-card-title">З холдерами / Ізоляторами</div>
-            <div id="res-holders" class="result-value">0 мм</div>
-            <div id="dim-holders" class="result-note">Габарити: 0 × 0 мм</div>
-        </div>
-    </div>
+    <div class="viz-box" id="viz"></div>
 
-    <div class="results-grid" style="margin-top: 15px;">
-        <div class="result-card" style="grid-column: 1 / -1;">
-            <div class="result-title">✂️ Рекомендована довжина нарізки плівки (з торцями)</div>
-            <div id="res-length" class="result-value" style="color: var(--text-main);">0 мм</div>
-            <div class="result-note">Довжина блоку + випуск для загіну на торці</div>
-        </div>
-    </div>
-
-    <div class="footer-info">
-        💡 <strong>Порада:</strong> ПВХ-термоусадка маркується за <u>шириною у складеному (пласкому) стані</u>. Обирайте найближчий більший стандартний розмір плівки з наявних у продажу.
-    </div>
-
-    <!-- Авторський блок -->
-    <div class="author-footer">
-        🛠️ Створено за ініціативи Dima Lasun.<br>
-        Моя група в FB «Ремонт електрообладнання»: 
-        <a href="https://facebook.com/groups/3145673675685047" target="_blank" rel="noopener noreferrer">facebook.com/groups/3145673675685047</a>
-    </div>
+    <footer>
+        Dima Lasun | <a href="https://github.com/dimon-qrz" target="_blank">GitHub</a> | <a href="https://www.facebook.com/groups/3145673675685047" target="_blank">Група FB</a>
+    </footer>
 </div>
 
 <script>
-    let state = {
-        chem: 'lifepo4',
-        cellModel: '105Ah',
-        p: 1,
-        s: 4
-    };
-
-    const database = {
-        'liion': {
-            '18650': { type: 'cyl', d: 18.5, dHolder: 20.2, h: 68 },
-            '21700': { type: 'cyl', d: 21.5, dHolder: 23.0, h: 73 }
-        },
-        'lifepo4': {
-            '32700': { type: 'cyl', d: 32.5, dHolder: 34.5, h: 72 },
-            '50Ah':  { type: 'prism', w: 148, t: 27, h: 135 },
-            '105Ah': { type: 'prism', w: 130, t: 36, h: 200 },
-            '280Ah': { type: 'prism', w: 174, t: 72, h: 207 },
-            '304Ah': { type: 'prism', w: 174, t: 72, h: 207 }
-        }
-    };
-
-    function setChem(chemType) {
-        state.chem = chemType;
-        const btnLiion = document.getElementById('btn-chem-liion');
-        const btnLifepo4 = document.getElementById('btn-chem-lifepo4');
-        const badge = document.getElementById('s-val-display');
-
-        if (chemType === 'liion') {
-            btnLiion.className = 'btn active';
-            btnLifepo4.className = 'btn';
-            badge.style.background = 'var(--accent)';
-            state.cellModel = '18650';
-        } else {
-            btnLiion.className = 'btn';
-            btnLifepo4.className = 'btn active-lifepo4';
-            badge.style.background = 'var(--lifepo4-color)';
-            state.cellModel = '105Ah';
-        }
-
-        renderCellSelector();
-        calculate();
-    }
-
-    function renderCellSelector() {
-        const container = document.getElementById('cell-selector');
-        container.innerHTML = '';
-
-        const models = Object.keys(database[state.chem]);
-        models.forEach((m) => {
-            const btn = document.createElement('button');
-            btn.className = `btn ${m === state.cellModel ? (state.chem === 'lifepo4' ? 'active-lifepo4' : 'active') : ''}`;
-            btn.innerText = m;
-            btn.onclick = () => {
-                state.cellModel = m;
-                updateActiveButton(btn);
-                calculate();
-            };
-            container.appendChild(btn);
-        });
-    }
-
-    function setP(pVal, btn) {
-        state.p = pVal;
-        updateActiveButton(btn);
-        calculate();
-    }
-
-    function updateS(sVal) {
-        state.s = parseInt(sVal);
-        document.getElementById('s-val-display').innerText = state.s + 'S';
-        calculate();
-    }
-
-    function updateActiveButton(clickedBtn) {
-        const parent = clickedBtn.parentElement;
-        const buttons = parent.querySelectorAll('.btn');
-        buttons.forEach(b => {
-            b.classList.remove('active');
-            b.classList.remove('active-lifepo4');
-        });
-        clickedBtn.classList.add(state.chem === 'lifepo4' ? 'active-lifepo4' : 'active');
-    }
-
-    function renderPreview(item, useSpacers) {
-        const grid = document.getElementById('battery-preview');
-        grid.innerHTML = '';
-
-        const displayS = Math.min(state.s, 12);
-
-        for (let r = 0; r < state.p; r++) {
-            const row = document.createElement('div');
-            row.className = 'battery-row';
-            
-            for (let c = 0; c < displayS; c++) {
-                if (item.type === 'cyl') {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell-cyl';
-                    row.appendChild(cell);
-                } else {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell-prism';
-                    row.appendChild(cell);
-
-                    if (useSpacers && c < displayS - 1) {
-                        const spacer = document.createElement('div');
-                        spacer.className = 'spacer-line';
-                        row.appendChild(spacer);
-                    }
-                }
-            }
-            grid.appendChild(row);
-        }
-    }
-
-    function calculate() {
-        const item = database[state.chem][state.cellModel];
-        const spacerOption = document.getElementById('spacer-option');
+    function calc() {
+        const chem = document.querySelector('input[name="chem"]:checked').value;
+        const s = parseInt(document.getElementById('s').value) || 1;
+        const p = parseInt(document.getElementById('p').value) || 1;
+        const capMah = parseFloat(document.getElementById('capacity').value) || 0;
         
-        let useSpacers = false;
-        if (item.type === 'prism') {
-            spacerOption.style.display = 'flex';
-            useSpacers = document.getElementById('use-spacers').checked;
-        } else {
-            spacerOption.style.display = 'none';
+        const rates = { liion: 3.6, lifepo4: 3.2, lead: 12.0 };
+        const baseV = rates[chem];
+        const voltage = (s * baseV).toFixed(1);
+        
+        const totalCapAh = (capMah * p) / 1000;
+        const totalWh = (totalCapAh * voltage).toFixed(1);
+
+        document.getElementById('config').innerText = `${s}S ${p}P`;
+        document.getElementById('v').innerText = voltage + " V";
+        document.getElementById('totalCap').innerText = totalCapAh >= 1 ? totalCapAh.toFixed(2) + " Ah" : capMah * p + " mAh";
+        document.getElementById('totalWh').innerText = totalWh + " Wh";
+        document.getElementById('total').innerText = (s * p) + " шт.";
+        
+        const viz = document.getElementById('viz');
+        viz.innerHTML = '';
+        
+        const maxDisplayS = 8;
+        const maxDisplayP = 8;
+        const renderS = Math.min(s, maxDisplayS);
+        const renderP = Math.min(p, maxDisplayP);
+
+        for (let i = 0; i < renderS; i++) {
+            let row = document.createElement('div');
+            row.className = 'battery-row';
+            for (let j = 0; j < renderP; j++) {
+                let cell = document.createElement('div');
+                cell.className = 'cell';
+                row.appendChild(cell);
+            }
+            viz.appendChild(row);
         }
 
-        renderPreview(item, useSpacers);
-
-        let widthBare, heightBare, widthHolder, heightHolder, cutLength;
-        let filmBare, filmHolder;
-
-        if (item.type === 'cyl') {
-            widthBare = state.s * item.d;
-            heightBare = state.p * item.d;
-            filmBare = Math.round((widthBare + heightBare) * 1.06);
-
-            widthHolder = state.s * item.dHolder;
-            heightHolder = state.p * item.dHolder;
-            filmHolder = Math.round((widthHolder + heightHolder) * 1.07);
-
-            const marginPerSide = state.p === 1 ? 10 : (state.p === 2 ? 15 : 20);
-            cutLength = item.h + (marginPerSide * 2);
-
-            document.getElementById('holders-card-title').innerText = "З холдерами (Рекомендовано)";
-        } else {
-            const spacerThickness = useSpacers ? 2.0 : 0.0;
-            const totalSpacersWidth = (state.s - 1) * spacerThickness;
-
-            widthBare = (state.s * item.t) + totalSpacersWidth;
-            heightBare = state.p * item.w;
-            filmBare = Math.round((widthBare + heightBare) * 1.05);
-
-            widthHolder = widthBare + 6;
-            heightHolder = heightBare + 4;
-            filmHolder = Math.round((widthHolder + heightHolder) * 1.05);
-
-            const topMargin = Math.round(item.t * 0.4);
-            cutLength = item.h + (topMargin * 2);
-
-            document.getElementById('holders-card-title').innerText = "З зовнішніми пластинами";
+        if (s > maxDisplayS || p > maxDisplayP) {
+            let hint = document.createElement('div');
+            hint.style.fontSize = '11px';
+            hint.style.color = '#8b949e';
+            hint.innerText = `(Показано скорочено для збірки ${s}S × ${p}P)`;
+            viz.appendChild(hint);
         }
-
-        document.getElementById('res-no-holders').innerText = filmBare + ' мм';
-        document.getElementById('dim-no-holders').innerText = `Габарити: ${widthBare.toFixed(0)} × ${heightBare.toFixed(0)} мм`;
-
-        document.getElementById('res-holders').innerText = filmHolder + ' мм';
-        document.getElementById('dim-holders').innerText = `Габарити: ${widthHolder.toFixed(0)} × ${heightHolder.toFixed(0)} мм`;
-
-        document.getElementById('res-length').innerText = cutLength + ' мм';
     }
-
-    setChem('lifepo4');
+    calc();
 </script>
-
 </body>
 </html>
